@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TanksServer", "TanksProj\TanksServer.csproj", "{9B919CD8-F251-4B30-A1B0-C9E0084FCF1E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TanksServer", "TanksProj\TanksServer.csproj", "{9B919CD8-F251-4B30-A1B0-C9E0084FCF1E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player", "Player\Player.csproj", "{3606FA97-7C30-4DAD-A45B-33259F078B9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Libs", "Libs\Libs.csproj", "{A45D806A-F937-4A1A-B507-F62F8B82B1E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{9B919CD8-F251-4B30-A1B0-C9E0084FCF1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B919CD8-F251-4B30-A1B0-C9E0084FCF1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B919CD8-F251-4B30-A1B0-C9E0084FCF1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3606FA97-7C30-4DAD-A45B-33259F078B9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3606FA97-7C30-4DAD-A45B-33259F078B9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3606FA97-7C30-4DAD-A45B-33259F078B9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3606FA97-7C30-4DAD-A45B-33259F078B9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A45D806A-F937-4A1A-B507-F62F8B82B1E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A45D806A-F937-4A1A-B507-F62F8B82B1E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A45D806A-F937-4A1A-B507-F62F8B82B1E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A45D806A-F937-4A1A-B507-F62F8B82B1E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
