@@ -1,5 +1,5 @@
 ﻿using System;
-
+using ClientServer;
 namespace Player
 {
     public static class Program

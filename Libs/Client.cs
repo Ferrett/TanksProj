@@ -7,17 +7,17 @@ using System.Text;
 
 namespace ClientServer
 {
-    public class Player
+    public class Client
     {
         public Socket socket { set; get; }
         protected IPEndPoint ipPoint;
 
-        public Player(string ip, int port)
+        public Client(string ip, int port)
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             ipPoint = new IPEndPoint(IPAddress.Parse(ip), port);
         }
-        public Player(Socket socket, string ip, int port)
+        public Client(Socket socket, string ip, int port)
         {
             this.socket = socket;
             ipPoint = new IPEndPoint(IPAddress.Parse(ip), port);
