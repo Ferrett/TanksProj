@@ -8,26 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace BroadcastMessengerConsole
 {
-    class UserInfo
-    {
-        [JsonPropertyName("OS name")]
-        public string OSname { get; set; }
-
-        [JsonPropertyName("OS version")]
-        public string OSver { get; set; }
-
-        [JsonPropertyName("Local Time")]
-        public string LocalTime { get; set; }
-
-        public UserInfo()
-        {
-            this.OSname = Environment.UserName;
-            this.OSver = Environment.OSVersion.ToString();
-            this.LocalTime = DateTime.Now.ToString();
-        }
-
-
-    }
+    
     class Program
     {
         static void Main(string[] args)
@@ -43,8 +24,8 @@ namespace BroadcastMessengerConsole
                 if (server.handler.Count != 0)
                 {
                     //Console.WriteLine(Server.FromBytesToString(server.Get(0)));
-                    UserInfo tmp = JsonSerializer.Deserialize<UserInfo>(Server.FromBytesToString(server.Get(0)));
-                    Console.WriteLine(tmp.LocalTime);
+                   // UserInfo tmp = JsonSerializer.Deserialize<UserInfo>(Server.FromBytesToString(server.Get(0)));
+                    //Console.WriteLine(tmp.LocalTime);
 
                     Console.WriteLine("\n[1] - Open app");
                     Console.WriteLine("[2] - Get files");

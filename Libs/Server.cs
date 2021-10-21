@@ -34,7 +34,6 @@ namespace ClientServer
         {
             handler.Add(new Player(socket.Accept(), "127.0.0.1", 8000));
             this.Send(Server.FromStringToBytes("Connected"), handler.Count - 1);
-            // handler.Last().socket = socket.Accept();
         }
         public void Send(List<byte> data, int index)
         {
