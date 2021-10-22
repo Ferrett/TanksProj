@@ -24,9 +24,12 @@ namespace BroadcastMessengerConsole
                 if (server.handler.Count != 0)
                 {
 
+                    //var data = server.Get();
+                    //if (data.Count != 0)
+                    //{
 
-                    tmp = JsonSerializer.Deserialize<Tank>(Server.FromBytesToString(server.Get()));
-                  
+                    //    tmp = JsonSerializer.Deserialize<Tank>(Server.FromBytesToString(data));
+                    //}
                     
             
 

@@ -16,6 +16,8 @@ namespace ClientServer
         public List<Tank> tank { get; }
         public List<Action<int>> actions { set; get; }
 
+        public List<Task> tasks { get; set; }
+
         public string Last;
 
         public Server(string ip, int port)
@@ -24,6 +26,7 @@ namespace ClientServer
             ipPoint = new IPEndPoint(IPAddress.Parse(ip), port);
             handler = new List<Client>();
             tank = new List<Tank>();
+            tasks = new List<Task>();
             actions = new List<Action<int>>();
         }
 
@@ -39,7 +42,44 @@ namespace ClientServer
             tank.Add(new Tank());
             Console.WriteLine("NEW PLAYER");
 
+            tasks.Add(new Task(() =>
+            {
+                int idx = handler.Count - 1;
+                string ip = handler[idx].socket.RemoteEndPoint.ToString();
+
+                while (true)
+                {
+                    Console.WriteLine(idx+" Connected");
+                    Get(ip);
+                    HandlerCheck();
+
+                    foreach (var item in handler)
+                    {
+                        Console.WriteLine(item.socket.RemoteEndPoint);
+                    }
+                   
+                    if (!handler.Any(x => x.socket.RemoteEndPoint.ToString() == ip))
+                    {
+                        Console.WriteLine("//////////////////////////////////////////////");
+                        break;
+                    }
+                }
+
+            }));
+            tasks.Last().Start();
+
             //this.Send(Server.FromStringToBytes("Connected"), handler.Count - 1);
+        }
+        public void HandlerCheck()
+        {
+            foreach (var item in handler)
+            {
+                if (!item.socket.Connected)
+                {
+                    handler.Remove(item);
+                    break;
+                }
+            }
         }
         public void Send(List<byte> data, int index)
         {
@@ -69,43 +109,123 @@ namespace ClientServer
             int bytes = 0;
             byte[] array = new byte[255];
 
+            try
+            {
+
+           
             do
             {
-                
+                try
+                {
                     bytes = handler[index].socket.Receive(array, array.Length, 0);
                     for (int i = 0; i < bytes; i++)
                     {
 
                         data.Add(array[i]);
                     }
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("DISCONNECT");
+                    tasks.RemoveAt(index);
+                    handler.RemoveAt(index);
+                    data.Clear();
+                    
+                    break;
+                }
 
             } while (handler[index].socket.Available > 0);
 
-            Console.WriteLine(handler[index].socket.RemoteEndPoint.ToString());
+            try
+            {
+                Console.WriteLine(handler[index].socket.RemoteEndPoint.ToString());
+            }
+            catch (Exception)
+            {
+
+            }
+
+            }
+            catch (Exception)
+            {
+
+               
+            }
             return data;
         }
-        public List<byte> Get()
+        public List<byte> Get(string ip)
         {
             List<byte> data = new List<byte>();
             int bytes = 0;
             byte[] array = new byte[255];
 
-            for (int i = 0; i < tank.Count; i++)
+            try
             {
-              do
-              {
-                   
-                for (int j = 0; j < bytes; j++)
+
+
+                do
+                {
+                    try
+                    {
+                        bytes = handler.Where(x=>x.socket.RemoteEndPoint.ToString() == ip).ToList()[0].socket.Receive(array, array.Length, 0);
+                        for (int i = 0; i < bytes; i++)
+                        {
+
+                            data.Add(array[i]);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("DISCONNECT");
+                        //tasks.RemoveAt(index);
+                        // handler.RemoveAt(index);
+                        data.Clear();
+
+                        break;
+                    }
+
+                } while (handler.Where(x => x.socket.RemoteEndPoint.ToString() == ip).ToList()[0].socket.Available > 0);
+
+                try
+                {
+                    Console.WriteLine(handler.Where(x => x.socket.RemoteEndPoint.ToString() == ip).ToList()[0].socket.RemoteEndPoint.ToString());
+                }
+                catch (Exception)
                 {
 
-                    data.Add(array[j]);
                 }
 
-              } while (handler[i].socket.Available > 0);
-              Console.WriteLine(handler[i].socket.RemoteEndPoint.ToString());
+            }
+            catch (Exception)
+            {
+
+
             }
             return data;
         }
+
+        //public List<byte> Get()
+        //{
+        //    List<byte> data = new List<byte>();
+        //    int bytes = 0;
+        //    byte[] array = new byte[255];
+
+        //    for (int i = 0; i < tank.Count; i++)
+        //    {
+        //        do
+        //        {
+
+        //           for (int j = 0; j < bytes; j++)
+        //           {
+
+        //            data.Add(array[j]);
+        //           }
+
+        //        } while (handler[i].socket.Available > 0);
+        //        Console.WriteLine(handler[i].socket.RemoteEndPoint.ToString());
+        //    }
+        //    return data;
+        //}
         public void Close()
         {
             for (int i = 0; i < handler.Count; i++)
