@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using ClientServer;
 using System.Text.Json;
 using System.Collections.Generic;
+using System;
 
 namespace Player
 {
@@ -32,9 +33,12 @@ namespace Player
         private SpriteBatch _spriteBatch;
 
         List<Tank> AllTanks;
+        List<Sprite> AllTankSprites;
         Tank tank;
         Sprite TankSprite;
         Client client;
+
+        Random rnd = new Random();
        
         public Game1()
         {
@@ -47,10 +51,12 @@ namespace Player
         {
             // TODO: Add your initialization logic here
             AllTanks = new List<Tank>();
+            AllTankSprites = new List<Sprite>();
 
             client = new Client("127.0.0.1", 8000);
             client.Connect();
 
+           
             //AllTanks = JsonSerializer.Deserialize<List<Tank>>(Server.FromBytesToString(client.Get()));
 
             base.Initialize();
@@ -71,51 +77,81 @@ namespace Player
 
             TankSprite.Texture = Content.Load<Texture2D>(TankSprite.TexturePath);
         }
-
+        int a = 0;
+        int b = 0;
+        bool keyPressed = false;
         protected override void Update(GameTime gameTime)
         {
+            Window.Title = b.ToString();
+            b++;
+            a++;
+            if (a %6 == 0&& a!=0)
+            GetData();
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
           
-            if (Keyboard.GetState().IsKeyDown(Keys.Right))
+            if (Keyboard.GetState().IsKeyDown(Keys.Right)&& keyPressed ==false)
             {
-                SentData();
                 TankSprite.Tank.X+= TankSprite.Tank.Speed;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.Left))
-            {
+                TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
+                keyPressed = true;
                 SentData();
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Left) && keyPressed == false)
+            {
                 TankSprite.Tank.X -= TankSprite.Tank.Speed;
+                TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
+                keyPressed = true;
+                SentData();
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Up))
+            if (Keyboard.GetState().IsKeyDown(Keys.Up) && keyPressed == false)
             {
-                SentData();
                 TankSprite.Tank.Y -= TankSprite.Tank.Speed;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.Down))
-            {
+                TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
+                keyPressed = true;
                 SentData();
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Down) && keyPressed == false)
+            {
                 TankSprite.Tank.Y += TankSprite.Tank.Speed;
+                TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
+                keyPressed = true;
+                SentData();
             }
 
-            TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X , TankSprite.Tank.Y, 40, 49);
+            keyPressed = false;
 
            
             base.Update(gameTime);
         }
-        int a = 0;
+
+        public void GetData()
+        {
+            try
+            {
+                AllTanks = JsonSerializer.Deserialize<List<Tank>>(Client.FromBytesToString(client.Get()));
+
+
+                AllTankSprites.Clear();
+                a = 0;
+            for (int i = 0; i < AllTanks.Count; i++)
+            {
+                AllTankSprites.Add(new Sprite(new Rectangle(AllTanks[i].X, AllTanks[i].Y, 40, 49), null, "Textures/tank", AllTanks[i], Color.White));
+                AllTankSprites[AllTankSprites.Count - 1].Texture = Content.Load<Texture2D>(TankSprite.TexturePath);
+            }
+            }
+            catch (System.Exception ex)
+            {
+            }
+        }
+ 
         public void SentData()
         {
-            a++;
-
-            if (a == 5)
-            {
-                a = 0;
                 string json = JsonSerializer.Serialize<Tank>(TankSprite.Tank);
                 client.Send(Client.FromStringToBytes(json));
-            }
         }
 
         protected override void Draw(GameTime gameTime)
@@ -124,7 +160,12 @@ namespace Player
 
             _spriteBatch.Begin();
 
-            _spriteBatch.Draw(TankSprite.Texture, new Vector2(TankSprite.SpriteRectangle.X, TankSprite.SpriteRectangle.Y),TankSprite.Color);
+            //_spriteBatch.Draw(TankSprite.Texture, new Vector2(TankSprite.SpriteRectangle.X, TankSprite.SpriteRectangle.Y),TankSprite.Color);
+
+            foreach (var item in AllTankSprites)
+            {
+                _spriteBatch.Draw(item.Texture, new Vector2(item.SpriteRectangle.X, item.SpriteRectangle.Y), item.Color);
+            }
 
             _spriteBatch.End();
             base.Draw(gameTime);

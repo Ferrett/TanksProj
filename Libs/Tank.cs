@@ -25,6 +25,9 @@ namespace ClientServer
             Speed = speed;
         }
 
-       
+        public override string ToString()
+        {
+            return $"X: {X}\nY: {Y}\n";
+        }
     }
 }

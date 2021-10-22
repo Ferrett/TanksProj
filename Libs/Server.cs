@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ClientServer
@@ -18,7 +20,7 @@ namespace ClientServer
 
         public List<Task> tasks { get; set; }
 
-        public string Last;
+
 
         public Server(string ip, int port)
         {
@@ -28,6 +30,9 @@ namespace ClientServer
             tank = new List<Tank>();
             tasks = new List<Task>();
             actions = new List<Action<int>>();
+
+            TimerCallback tm = new TimerCallback(SendTanks);
+            Timer timer = new Timer(tm, 0, 0, 100);
         }
 
         public void Start()
@@ -49,18 +54,28 @@ namespace ClientServer
 
                 while (true)
                 {
-                    Console.WriteLine(idx+" Connected");
                     Get(ip);
                     HandlerCheck();
 
-                    foreach (var item in handler)
-                    {
-                        Console.WriteLine(item.socket.RemoteEndPoint);
-                    }
                    
+
+
+                    try
+                    {
+                        tank[idx] = JsonSerializer.Deserialize<Tank>(FromBytesToString(Get(ip)));
+
+
+                    }
+                    catch (Exception)
+                    {
+
+                            
+                    }
+                        
+
                     if (!handler.Any(x => x.socket.RemoteEndPoint.ToString() == ip))
                     {
-                        Console.WriteLine("//////////////////////////////////////////////");
+                       
                         break;
                     }
                 }
@@ -70,16 +85,28 @@ namespace ClientServer
 
             //this.Send(Server.FromStringToBytes("Connected"), handler.Count - 1);
         }
-        public void HandlerCheck()
+        public void SendTanks(object obj)
         {
-            foreach (var item in handler)
+            Console.WriteLine("Call");
+            string json = JsonSerializer.Serialize<List<Tank>>(tank);
+            for (int i = 0; i < handler.Count; i++)
             {
-                if (!item.socket.Connected)
-                {
-                    handler.Remove(item);
-                    break;
-                }
+                Send(FromStringToBytes(json), i);
             }
+        }
+        public bool HandlerCheck()
+        {
+            for (int i = 0; i < handler.Count; i++)
+            {
+                if (!handler[i].socket.Connected)
+                {
+                    handler.Remove(handler[i]);
+                    tank.RemoveAt(i);
+                    return false;
+                }
+               
+            }
+            return true;
         }
         public void Send(List<byte> data, int index)
         {
@@ -103,62 +130,12 @@ namespace ClientServer
         }
        
 
-        public List<byte> Get(int index)
-        {
-            List<byte> data = new List<byte>();
-            int bytes = 0;
-            byte[] array = new byte[255];
-
-            try
-            {
-
-           
-            do
-            {
-                try
-                {
-                    bytes = handler[index].socket.Receive(array, array.Length, 0);
-                    for (int i = 0; i < bytes; i++)
-                    {
-
-                        data.Add(array[i]);
-                    }
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("DISCONNECT");
-                    tasks.RemoveAt(index);
-                    handler.RemoveAt(index);
-                    data.Clear();
-                    
-                    break;
-                }
-
-            } while (handler[index].socket.Available > 0);
-
-            try
-            {
-                Console.WriteLine(handler[index].socket.RemoteEndPoint.ToString());
-            }
-            catch (Exception)
-            {
-
-            }
-
-            }
-            catch (Exception)
-            {
-
-               
-            }
-            return data;
-        }
         public List<byte> Get(string ip)
         {
             List<byte> data = new List<byte>();
             int bytes = 0;
             byte[] array = new byte[255];
-
+           
             try
             {
 
@@ -181,19 +158,28 @@ namespace ClientServer
                         // handler.RemoveAt(index);
                         data.Clear();
 
+                  
                         break;
                     }
 
                 } while (handler.Where(x => x.socket.RemoteEndPoint.ToString() == ip).ToList()[0].socket.Available > 0);
 
-                try
-                {
-                    Console.WriteLine(handler.Where(x => x.socket.RemoteEndPoint.ToString() == ip).ToList()[0].socket.RemoteEndPoint.ToString());
-                }
-                catch (Exception)
-                {
+        
+                    try
+                    {
+                        //Console.WriteLine(handler.Where(x => x.socket.RemoteEndPoint.ToString() == ip).ToList()[0].socket.RemoteEndPoint.ToString());
+                        for (int i = 0; i < tank.Count; i++)
+                        {
 
-                }
+                        
+                            Console.WriteLine(tank[i]);
+                        //SendTanks();
+                        }
+                    }
+                    catch (Exception)
+                    {
+
+                    }
 
             }
             catch (Exception)
@@ -204,28 +190,7 @@ namespace ClientServer
             return data;
         }
 
-        //public List<byte> Get()
-        //{
-        //    List<byte> data = new List<byte>();
-        //    int bytes = 0;
-        //    byte[] array = new byte[255];
-
-        //    for (int i = 0; i < tank.Count; i++)
-        //    {
-        //        do
-        //        {
-
-        //           for (int j = 0; j < bytes; j++)
-        //           {
-
-        //            data.Add(array[j]);
-        //           }
-
-        //        } while (handler[i].socket.Available > 0);
-        //        Console.WriteLine(handler[i].socket.RemoteEndPoint.ToString());
-        //    }
-        //    return data;
-        //}
+       
         public void Close()
         {
             for (int i = 0; i < handler.Count; i++)
