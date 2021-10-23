@@ -15,16 +15,16 @@ namespace Player
         public Texture2D Texture;
         public string TexturePath;
         public Tank Tank;
-        public Color Color;
 
-        public Sprite(Rectangle spriteRectangle, Texture2D texture, string texturePath, Tank tank,Color color)
+
+        public Sprite(Rectangle spriteRectangle, Texture2D texture, string texturePath, Tank tank)
         {
 
             SpriteRectangle = spriteRectangle;
             Texture = texture;
             TexturePath = texturePath;
             Tank = tank;
-            Color = color;
+
         }
     }
     public class Game1 : Game
@@ -56,8 +56,9 @@ namespace Player
             client = new Client("127.0.0.1", 8000);
             client.Connect();
 
-           
-            //AllTanks = JsonSerializer.Deserialize<List<Tank>>(Server.FromBytesToString(client.Get()));
+            this.IsFixedTimeStep = true;//false;
+            this.TargetElapsedTime = TimeSpan.FromSeconds(1d / 60d); //60);
+
 
             base.Initialize();
             _graphics.PreferredBackBufferWidth = 500;
@@ -72,86 +73,91 @@ namespace Player
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             tank = new Tank();
-            TankSprite = new Sprite(new Rectangle(0, 0, 40, 49), null, "Textures/tank",tank,Color.White);
+            TankSprite = new Sprite(new Rectangle(0, 0, 40, 49), null, "Textures/tank",tank);
             
 
             TankSprite.Texture = Content.Load<Texture2D>(TankSprite.TexturePath);
         }
-        int a = 0;
-        int b = 0;
+
         bool keyPressed = false;
         protected override void Update(GameTime gameTime)
         {
-            Window.Title = b.ToString();
-            b++;
-            a++;
-            if (a %6 == 0&& a!=0)
-            GetData();
-
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-          
-            if (Keyboard.GetState().IsKeyDown(Keys.Right)&& keyPressed ==false)
-            {
-                TankSprite.Tank.X+= TankSprite.Tank.Speed;
-                TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
-                keyPressed = true;
-                SentData();
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.Left) && keyPressed == false)
-            {
-                TankSprite.Tank.X -= TankSprite.Tank.Speed;
-                TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
-                keyPressed = true;
-                SentData();
-            }
-
-            if (Keyboard.GetState().IsKeyDown(Keys.Up) && keyPressed == false)
-            {
-                TankSprite.Tank.Y -= TankSprite.Tank.Speed;
-                TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
-                keyPressed = true;
-                SentData();
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.Down) && keyPressed == false)
-            {
-                TankSprite.Tank.Y += TankSprite.Tank.Speed;
-                TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
-                keyPressed = true;
-                SentData();
-            }
-
-            keyPressed = false;
-
+            //Window.Title ="FPS: "+ (1f / gameTime.ElapsedGameTime.TotalSeconds).ToString();
            
+
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Right) && keyPressed == false)
+             {
+                    TankSprite.Tank.X += TankSprite.Tank.Speed;
+                    TankSprite.Tank.Rotation = 7.85f;
+                    TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
+                    keyPressed = true;
+                    SentData();
+            }
+                if (Keyboard.GetState().IsKeyDown(Keys.Left) && keyPressed == false)
+                {
+                    TankSprite.Tank.X -= TankSprite.Tank.Speed;
+                    TankSprite.Tank.Rotation = 23.55f;
+                    TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
+                    keyPressed = true;
+                    SentData();
+                }
+
+                if (Keyboard.GetState().IsKeyDown(Keys.Up) && keyPressed == false)
+                {
+                    TankSprite.Tank.Y -= TankSprite.Tank.Speed;
+                    TankSprite.Tank.Rotation = 0f;
+                    TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
+                    keyPressed = true;
+                    SentData();
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.Down) && keyPressed == false)
+                {
+                    TankSprite.Tank.Y += TankSprite.Tank.Speed;
+                    TankSprite.Tank.Rotation = 15.7f;
+                    TankSprite.SpriteRectangle = new Rectangle(TankSprite.Tank.X, TankSprite.Tank.Y, 40, 49);
+                    keyPressed = true;
+                    SentData();
+                }
+
+                keyPressed = false;
+
+            GetData();
             base.Update(gameTime);
         }
-
+        int a = 0;
         public void GetData()
         {
+            a++;
+            Window.Title = $"Get Try #{a}";
             try
             {
                 AllTanks = JsonSerializer.Deserialize<List<Tank>>(Client.FromBytesToString(client.Get()));
 
-
                 AllTankSprites.Clear();
-                a = 0;
-            for (int i = 0; i < AllTanks.Count; i++)
+                Window.Title = "Get Succsess";
+                for (int i = 0; i < AllTanks.Count; i++)
             {
-                AllTankSprites.Add(new Sprite(new Rectangle(AllTanks[i].X, AllTanks[i].Y, 40, 49), null, "Textures/tank", AllTanks[i], Color.White));
+                AllTankSprites.Add(new Sprite(new Rectangle(AllTanks[i].X, AllTanks[i].Y, 40, 49), null, "Textures/tank", AllTanks[i]));
                 AllTankSprites[AllTankSprites.Count - 1].Texture = Content.Load<Texture2D>(TankSprite.TexturePath);
             }
             }
             catch (System.Exception ex)
             {
+                Window.Title = "Get fail";
             }
         }
  
         public void SentData()
         {
-                string json = JsonSerializer.Serialize<Tank>(TankSprite.Tank);
+            Window.Title = "Send try";
+            string json = JsonSerializer.Serialize<Tank>(TankSprite.Tank);
                 client.Send(Client.FromStringToBytes(json));
+            Window.Title = "Send success";
+
         }
 
         protected override void Draw(GameTime gameTime)
@@ -161,10 +167,11 @@ namespace Player
             _spriteBatch.Begin();
 
             //_spriteBatch.Draw(TankSprite.Texture, new Vector2(TankSprite.SpriteRectangle.X, TankSprite.SpriteRectangle.Y),TankSprite.Color);
-
+            
+           
             foreach (var item in AllTankSprites)
             {
-                _spriteBatch.Draw(item.Texture, new Vector2(item.SpriteRectangle.X, item.SpriteRectangle.Y), item.Color);
+                _spriteBatch.Draw(item.Texture, new Rectangle(item.Tank.X, item.Tank.Y, item.Texture.Width, item.Texture.Height), null,new Color( item.Tank.Color[0], item.Tank.Color[1], item.Tank.Color[2]),item.Tank.Rotation, new Vector2(item.Texture.Width / 2f, item.Texture.Height / 2f), SpriteEffects.None,0f);
             }
 
             _spriteBatch.End();

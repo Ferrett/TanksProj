@@ -21,7 +21,8 @@ namespace ClientServer
         public List<Task> tasks { get; set; }
 
 
-
+        int iterator = 0;
+   
         public Server(string ip, int port)
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -32,7 +33,8 @@ namespace ClientServer
             actions = new List<Action<int>>();
 
             TimerCallback tm = new TimerCallback(SendTanks);
-            Timer timer = new Timer(tm, 0, 0, 100);
+            Timer timer = new Timer(tm, 0, 0, 16);
+           
         }
 
         public void Start()
@@ -87,11 +89,19 @@ namespace ClientServer
         }
         public void SendTanks(object obj)
         {
-            Console.WriteLine("Call");
-            string json = JsonSerializer.Serialize<List<Tank>>(tank);
-            for (int i = 0; i < handler.Count; i++)
+            if(handler.Count>=1)
             {
-                Send(FromStringToBytes(json), i);
+               
+                iterator++;
+                Console.WriteLine($"Call #{iterator}");
+                string json = JsonSerializer.Serialize<List<Tank>>(tank);
+                for (int i = 0; i < handler.Count; i++)
+                {
+                    Console.WriteLine("Send start");
+                    Send(FromStringToBytes(json), i);
+                    Console.WriteLine("Send end");
+                   
+                }
             }
         }
         public bool HandlerCheck()
