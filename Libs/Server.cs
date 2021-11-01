@@ -4,9 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace ClientServer
 {
@@ -15,26 +13,15 @@ namespace ClientServer
         private Socket socket;
         private IPEndPoint ipPoint;
         public List<Client> handler { get; }
-        public List<Tank> tank { get; }
+
         public List<Action<int>> actions { set; get; }
 
-        public List<Task> tasks { get; set; }
-
-
-        int iterator = 0;
-   
         public Server(string ip, int port)
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             ipPoint = new IPEndPoint(IPAddress.Parse(ip), port);
             handler = new List<Client>();
-            tank = new List<Tank>();
-            tasks = new List<Task>();
             actions = new List<Action<int>>();
-
-            TimerCallback tm = new TimerCallback(SendTanks);
-            Timer timer = new Timer(tm, 0, 0, 16);
-           
         }
 
         public void Start()
@@ -46,161 +33,47 @@ namespace ClientServer
         public void AddClient(string ip, int port)
         {
             handler.Add(new Client(socket.Accept(), "127.0.0.1", 8000));
-            tank.Add(new Tank());
-            Console.WriteLine("NEW PLAYER");
-
-            tasks.Add(new Task(() =>
-            {
-                int idx = handler.Count - 1;
-                string ip = handler[idx].socket.RemoteEndPoint.ToString();
-
-                while (true)
-                {
-                    Get(ip);
-                    HandlerCheck();
-
-                   
-
-
-                    try
-                    {
-                        tank[idx] = JsonSerializer.Deserialize<Tank>(FromBytesToString(Get(ip)));
-
-
-                    }
-                    catch (Exception)
-                    {
-
-                            
-                    }
-                        
-
-                    if (!handler.Any(x => x.socket.RemoteEndPoint.ToString() == ip))
-                    {
-                       
-                        break;
-                    }
-                }
-
-            }));
-            tasks.Last().Start();
-
-            //this.Send(Server.FromStringToBytes("Connected"), handler.Count - 1);
-        }
-        public void SendTanks(object obj)
-        {
-            if(handler.Count>=1)
-            {
-               
-                iterator++;
-                Console.WriteLine($"Call #{iterator}");
-                string json = JsonSerializer.Serialize<List<Tank>>(tank);
-                for (int i = 0; i < handler.Count; i++)
-                {
-                    Console.WriteLine("Send start");
-                    Send(FromStringToBytes(json), i);
-                    Console.WriteLine("Send end");
-                   
-                }
-            }
-        }
-        public bool HandlerCheck()
-        {
-            for (int i = 0; i < handler.Count; i++)
-            {
-                if (!handler[i].socket.Connected)
-                {
-                    handler.Remove(handler[i]);
-                    tank.RemoveAt(i);
-                    return false;
-                }
-               
-            }
-            return true;
+            this.Send(Server.FromStringToBytes("Connected"), handler.Count - 1);
         }
         public void Send(List<byte> data, int index)
         {
             handler[index].socket.Send(data.ToArray());
         }
-        public void RemoveClient(int id)
+        public List<byte> Get(int index)
         {
-            //this.Send(Server.FromStringToBytes("Disconnected"), id);
-            this.handler[id].socket.Close();
-            this.handler.RemoveAt(id);
-            tank.RemoveAt(id);
-        }
-        public void ShowAllUsers(Server server)
-        {
-            Console.WriteLine("\nUser List:");
-            for (int i = 0; i < server.handler.Count; i++)
-            {
-                Console.WriteLine($"#{i + 1}: {server.handler[i].socket.RemoteEndPoint}");
-            }
-            Console.WriteLine();
-        }
-       
 
-        public List<byte> Get(string ip)
-        {
             List<byte> data = new List<byte>();
             int bytes = 0;
             byte[] array = new byte[255];
-           
+
             try
             {
 
-
                 do
                 {
-                    try
+                    bytes = handler[index].socket.Receive(array, array.Length, 0);
+                    for (int i = 0; i < bytes; i++)
                     {
-                        bytes = handler.Where(x=>x.socket.RemoteEndPoint.ToString() == ip).ToList()[0].socket.Receive(array, array.Length, 0);
-                        for (int i = 0; i < bytes; i++)
-                        {
-
-                            data.Add(array[i]);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        Console.WriteLine("DISCONNECT");
-                        //tasks.RemoveAt(index);
-                        // handler.RemoveAt(index);
-                        data.Clear();
-
-                  
-                        break;
+                        data.Add(array[i]);
                     }
 
-                } while (handler.Where(x => x.socket.RemoteEndPoint.ToString() == ip).ToList()[0].socket.Available > 0);
 
-        
-                    try
-                    {
-                        //Console.WriteLine(handler.Where(x => x.socket.RemoteEndPoint.ToString() == ip).ToList()[0].socket.RemoteEndPoint.ToString());
-                        for (int i = 0; i < tank.Count; i++)
-                        {
-
-                        
-                            Console.WriteLine(tank[i]);
-                        //SendTanks();
-                        }
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-
+                } while (handler[index].socket.Available > 0);
             }
-            catch (Exception)
+            catch (Exception e)
             {
 
-
             }
+            GC.Collect(GC.GetGeneration(bytes));
+            GC.Collect(GC.GetGeneration(array));
             return data;
         }
-
-       
+        public void RemoveClient(int index)
+        {
+            this.Send(Server.FromStringToBytes("Disconnected"), index);
+            this.handler[index].socket.Close();
+            this.handler.RemoveAt(index);
+        }
         public void Close()
         {
             for (int i = 0; i < handler.Count; i++)
@@ -211,11 +84,10 @@ namespace ClientServer
         }
         public void ConnectionUpdate()
         {
-            while (true)
-            {
-                this.AddClient("127.0.0.1", 8000);
 
-            }
+            this.AddClient("127.0.0.1", 8000);
+
+
         }
         public static string FromBytesToString(List<byte> bytes)
         {

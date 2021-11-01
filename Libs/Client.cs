@@ -17,12 +17,11 @@ namespace ClientServer
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             ipPoint = new IPEndPoint(IPAddress.Parse(ip), port);
         }
-        public Client(Socket socket, string ip, int port)
+        public Client(Socket sock, string ip, int port)
         {
-            this.socket = socket;
+            this.socket = sock;
             ipPoint = new IPEndPoint(IPAddress.Parse(ip), port);
         }
-
         public void Connect()
         {
             socket.Connect(ipPoint);
@@ -47,7 +46,8 @@ namespace ClientServer
 
 
             } while (socket.Available > 0);
-
+            GC.Collect(GC.GetGeneration(bytes));
+            GC.Collect(GC.GetGeneration(array));
 
             return data;
         }
