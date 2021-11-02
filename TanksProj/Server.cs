@@ -22,50 +22,60 @@ namespace ServerConsole
                 while (true)
                 {
                     server.ConnectionUpdate();
-                    tankThreads.Add(new Task(() => {
-                        string ip = server.handler.Last().socket.RemoteEndPoint.ToString();
-                        int index = server.handler.IndexOf(server.handler.Where((item) => item.socket.RemoteEndPoint.ToString() == ip).First());
-                        Console.WriteLine(ip);
+                    if (server.handler.Count < 5)
+                        server.Send(Server.FromStringToBytes("nice"), server.handler.Count-1);
+                    else
+                        server.Send(Server.FromStringToBytes("full"), server.handler.Count - 1);
 
-                        tanks.Add(new Tank());
-
-                        while (true)
+                    if (server.handler.Count < 5)
+                    {
+                        tankThreads.Add(new Task(() =>
                         {
+                            string ip = server.handler.Last().socket.RemoteEndPoint.ToString();
+                            int index = server.handler.IndexOf(server.handler.Where((item) => item.socket.RemoteEndPoint.ToString() == ip).First());
+                            Console.WriteLine(ip);
 
+                            tanks.Add(new Tank());
 
-                            if (!server.handler[index].socket.Connected)
-                            {
-                                server.handler.RemoveAt(index);
-                                tanks.RemoveAt(index);
-                                break;
-                            }
-
-                            List<byte> data = server.Get(index);
-                            if (data.Count != 0)
+                            while (true)
                             {
 
 
-                                try
+                                if (!server.handler[index].socket.Connected)
                                 {
-                                    Tank info = JsonSerializer.Deserialize<Tank>(Server.FromBytesToString(data));
-                                    tanks[index] = info;
+                                    server.handler.RemoveAt(index);
+                                    tanks.RemoveAt(index);
+                                    break;
                                 }
-                                catch (Exception)
+
+                                List<byte> data = server.Get(index);
+                                if (data.Count != 0)
                                 {
-                                    Console.WriteLine("Lost Bytes");
+
+
+                                    try
+                                    {
+                                        Tank info = JsonSerializer.Deserialize<Tank>(Server.FromBytesToString(data));
+                                        tanks[index] = info;
+                                    }
+                                    catch (Exception)
+                                    {
+                                        Console.WriteLine("Lost Bytes");
+
+                                    }
 
                                 }
+                                GC.Collect(GC.GetGeneration(data));
+
+
 
                             }
-                            GC.Collect(GC.GetGeneration(data));
 
 
-
-                        }
-
-
-                    }));
-                    tankThreads.Last().Start();
+                        }));
+                        tankThreads.Last().Start();
+                    }
+                    
                 }
             });
             clientsUpdate.Start();

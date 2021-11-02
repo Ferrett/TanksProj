@@ -37,12 +37,12 @@ namespace TankGame
                     {'X','X','X','X','X','X','X','X','X','X','X','X'},
                     {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
                     {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
-                    {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
-                    {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
-                    {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
-                    {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
-                    {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
-                    {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
+                    {'X',' ',' ',' ',' ','X',' ',' ',' ',' ',' ','X'},
+                    {'X',' ',' ',' ',' ','X',' ',' ',' ',' ',' ','X'},
+                    {'X',' ',' ',' ',' ','X',' ',' ',' ',' ',' ','X'},
+                    {'X',' ',' ',' ',' ','X','X','X','X',' ',' ','X'},
+                    {'X',' ',' ',' ',' ','X',' ',' ',' ',' ',' ','X'},
+                    {'X',' ',' ',' ',' ','X',' ',' ',' ',' ',' ','X'},
                     {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
                     {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
                     {'X','X','X','X','X','X','X','X','X','X','X','X'},
@@ -53,7 +53,7 @@ namespace TankGame
                 {
                     for (int j = 0; j < IntMap.GetLength(1); j++)
                     {
-                        WallMap[i, j] = new Wall(new System.Drawing.Rectangle(i * 50, j * 50, 50, 50), IntMap[i, j] == 'X' ? true : false);
+                        WallMap[i, j] = new Wall(new System.Drawing.Rectangle(j * 50, i * 50, 50, 50), IntMap[i, j] == 'X' ? true : false);
                     }
                 }
 
@@ -78,8 +78,6 @@ namespace TankGame
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-
-
         }
 
         protected override void Initialize()
@@ -88,11 +86,15 @@ namespace TankGame
             client = new Client("127.0.0.1", 8000);
             tanks = new List<Tank>();
 
+            
             while (!client.socket.Connected)
             {
                 try
                 {
                     client.Connect();
+
+                    if (Client.FromBytesToString(client.Get()) == "full")
+                        Exit();
                 }
                 catch (System.Exception)
                 {
@@ -131,8 +133,6 @@ namespace TankGame
 
         protected override void Update(GameTime gameTime)
         {
-
-            //  Window.Title = GC.GetTotalMemory(false).ToString();
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
@@ -195,7 +195,11 @@ namespace TankGame
 
             if (key.IsKeyDown(Keys.Space) && tank.ShootCoolDown == 0)
             {
-                tank.Bullet = new Bullet(new System.Drawing.Rectangle(tank.Rectangle.X, tank.Rectangle.Y, 10, 30), tank.Dir, 5, true);
+
+                tank.Bullet.Rectangle = new System.Drawing.Rectangle(tank.Rectangle.X, tank.Rectangle.Y, 10, 30);
+                tank.Bullet.IsActive = true;
+                tank.Bullet.Dir = tank.Dir;
+
                 if (tank.Dir == Direction.UP)
                     curbullettexture = bullettexture[0];
                 else if (tank.Dir == Direction.RIGHT)
@@ -349,16 +353,6 @@ namespace TankGame
                 curbullettexture = bullettexture[3];
             }
 
-            //_spriteBatch.Draw(
-            //    bullettexture,
-            //    new Vector2(bullet.Rectangle.X, bullet.Rectangle.Y),
-            //    null,
-            //    Color.White,
-            //    side,
-            //    new Vector2(5, 0),
-            //    1,
-            //    SpriteEffects.None,
-            //    0);
             _spriteBatch.Draw(curbullettexture, new Vector2(bullet.Rectangle.X, bullet.Rectangle.Y), Color.White);
             GC.Collect(GC.GetGeneration(side));
         }
@@ -386,18 +380,6 @@ namespace TankGame
                 curtanktexture = tanktexture[3];
             }
 
-
-            //_spriteBatch.Draw(
-            //    tanktexture,
-            //    new Vector2(tank.Rectangle.X, tank.Rectangle.Y),
-            //    null,
-            //   new Color(255, 255 - (200 - tank.HP * 2), 255 - (200 - tank.HP * 2)),
-            //    side,
-            //    new Vector2(20, 25),
-            //    1,
-            //    SpriteEffects.None,
-            //    0);
-
             _spriteBatch.Draw(curtanktexture, new Vector2(tank.Rectangle.X, tank.Rectangle.Y), new Color(255, 255 - (200 - tank.HP * 2), 255 - (200 - tank.HP * 2)));
             GC.Collect(GC.GetGeneration(side));
         }
@@ -423,7 +405,6 @@ namespace TankGame
             }
 
             drawWalls();
-
 
             _spriteBatch.End();
 

@@ -24,11 +24,18 @@ namespace TankLib
             this.IsActive = act;
             this.Damage = 30;
 
-            if (dir == Direction.DOWN)
+            FixCords();
+
+
+        }
+
+        public void FixCords()
+        {
+            if (Dir == Direction.DOWN)
                 Rectangle = new Rectangle(Rectangle.X + 15, Rectangle.Y + 35, 10, 30);
-            else if (dir == Direction.UP)
+            else if (Dir == Direction.UP)
                 Rectangle = new Rectangle(Rectangle.X + 15, Rectangle.Y - 35, 10, 30);
-            else if (dir == Direction.LEFT)
+            else if (Dir == Direction.LEFT)
                 Rectangle = new Rectangle(Rectangle.X - 35, Rectangle.Y + 15, 10, 30);
             else
                 Rectangle = new Rectangle(Rectangle.X + 35, Rectangle.Y + 15, 10, 30);

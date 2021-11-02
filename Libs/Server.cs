@@ -12,7 +12,7 @@ namespace ClientServer
     {
         private Socket socket;
         private IPEndPoint ipPoint;
-        public List<Client> handler { get; }
+        public  List<Client> handler { get; }
 
         public List<Action<int>> actions { set; get; }
 
@@ -32,8 +32,10 @@ namespace ClientServer
         }
         public void AddClient(string ip, int port)
         {
-            handler.Add(new Client(socket.Accept(), "127.0.0.1", 8000));
-            this.Send(Server.FromStringToBytes("Connected"), handler.Count - 1);
+           
+                handler.Add(new Client(socket.Accept(), "127.0.0.1", 8000));
+                this.Send(Server.FromStringToBytes("Connected"), handler.Count - 1);
+            
         }
         public void Send(List<byte> data, int index)
         {
@@ -84,7 +86,7 @@ namespace ClientServer
         }
         public void ConnectionUpdate()
         {
-
+           
             this.AddClient("127.0.0.1", 8000);
 
 
