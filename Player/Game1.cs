@@ -8,6 +8,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.IO;
 
 namespace TankGame
 {
@@ -27,13 +28,13 @@ namespace TankGame
 
         public static class Map
         {
-            public static char[,] IntMap { set; get; }
+            public static char[,] CharMap { set; get; }
 
             public static Wall[,] WallMap { set; get; }
 
             static Map()
             {
-                IntMap = new char[12, 12]{
+                CharMap = new char[12, 12]{
                     {'X','X','X','X','X','X','X','X','X','X','X','X'},
                     {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
                     {'X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X'},
@@ -48,15 +49,20 @@ namespace TankGame
                     {'X','X','X','X','X','X','X','X','X','X','X','X'},
                 };
 
+               
+
+            }
+
+            public static void CharToWall()
+            {
                 WallMap = new Wall[12, 12];
-                for (int i = 0; i < IntMap.GetLength(0); i++)
+                for (int i = 0; i < CharMap.GetLength(0); i++)
                 {
-                    for (int j = 0; j < IntMap.GetLength(1); j++)
+                    for (int j = 0; j < CharMap.GetLength(1); j++)
                     {
-                        WallMap[i, j] = new Wall(new System.Drawing.Rectangle(j * 50, i * 50, 50, 50), IntMap[i, j] == 'X' ? true : false);
+                        WallMap[i, j] = new Wall(new System.Drawing.Rectangle(j * 50, i * 50, 50, 50), CharMap[i, j] == 'X' ? true : false);
                     }
                 }
-
             }
         }
 
@@ -71,6 +77,75 @@ namespace TankGame
 
                 IsActive = active;
             }
+        }
+
+        public static class FileReader
+        {
+            public static string DirectoryPath { get; set; }
+            public static string FileName { get; set; }
+
+            public static string MapString { get; set; }
+
+            static FileReader()
+            {
+                DirectoryPath = @"C:\ProgramData\Tanks";
+                FileName = "Map.txt";
+            }
+            public static bool MapExists()
+            {
+                if (Directory.Exists(DirectoryPath))
+                    if (File.Exists($"{DirectoryPath+"\\"}{FileName}"))
+                return true;
+
+                return false;
+            }
+
+            public static void ReadMap()
+            {
+                MapString = File.ReadAllText($"{DirectoryPath + "\\"}{FileName}");
+
+                char[] CharArrayMap = MapString.ToCharArray();
+                int a = 0;
+                for (int i = 0; i < Map.CharMap.GetLength(0); i++)
+                {
+                    for (int j = 0; j < Map.CharMap.GetLength(1); j++)
+                    {
+                        if (CharArrayMap[a] != '\n')
+                        {
+                            Map.CharMap[i, j] = CharArrayMap[a];
+
+                            a++;
+                        }
+                    }
+                }
+                
+                Map.CharToWall();
+            }
+
+            public static void WriteMap()
+            {
+                MapString = String.Empty;
+
+                for (int i = 0; i < Map.CharMap.GetLength(0); i++)
+                {
+                    for (int j = 0; j < Map.CharMap.GetLength(1); j++)
+                    {
+                        MapString += Map.CharMap[i, j];
+                    }
+                    MapString += "\n";
+                }
+
+                File.WriteAllText($"{DirectoryPath + "\\"}{FileName}",MapString);
+            }
+
+            public static void CreateFile()
+            {
+                Directory.CreateDirectory(@"C:\ProgramData\Tanks");
+
+                File.Create($"{DirectoryPath + "\\"}{FileName}").Close();
+                
+            }
+
         }
 
         public Game()
@@ -101,6 +176,15 @@ namespace TankGame
                     Thread.Sleep(100);
                 }
             }
+
+            if (FileReader.MapExists() == false)
+            {
+                FileReader.CreateFile();
+                FileReader.WriteMap();
+            }
+
+            FileReader.ReadMap();
+            
 
             _graphics.PreferredBackBufferWidth = 600;
             _graphics.PreferredBackBufferHeight = 600;
@@ -321,9 +405,9 @@ namespace TankGame
         float side = 0;
         private void drawWalls()
         {
-            for (int i = 0; i < Map.IntMap.GetLength(0); i++)
+            for (int i = 0; i < Map.CharMap.GetLength(0); i++)
             {
-                for (int j = 0; j < Map.IntMap.GetLength(1); j++)
+                for (int j = 0; j < Map.CharMap.GetLength(1); j++)
                 {
                     if (Map.WallMap[i, j].IsActive == true)
                         _spriteBatch.Draw(walltexture, new Vector2(Map.WallMap[i, j].Rectangle.X, Map.WallMap[i, j].Rectangle.Y), Color.White);
