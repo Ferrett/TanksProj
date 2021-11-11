@@ -280,10 +280,11 @@ namespace TankGame
             if (key.IsKeyDown(Keys.Space) && tank.ShootCoolDown == 0)
             {
 
-                // tank.Bullet.Dir = tank.Dir;
-                // tank.Bullet.IsActive = true;
-                //tank.Bullet.Rectangle = new System.Drawing.Rectangle(tank.Rectangle.X, tank.Rectangle.Y, 10, 30);
-                tank.Bullet = new Bullet(new System.Drawing.Rectangle(tank.Rectangle.X, tank.Rectangle.Y, 10, 30), tank.Dir, 10, true);
+                 tank.Bullet.Dir = tank.Dir;
+                 tank.Bullet.IsActive = true;
+                tank.Bullet.Rectangle = new System.Drawing.Rectangle(tank.Rectangle.X, tank.Rectangle.Y, 10, 30);
+                tank.Bullet.FixCords();
+                
 
                 if (tank.Dir == Direction.UP)
                     curbullettexture = bullettexture[0];

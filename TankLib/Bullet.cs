@@ -22,21 +22,21 @@ namespace TankLib
             this.Dir = dir;
             this.Speed = speed;
             this.IsActive = act;
-            this.Damage = 300;
-
-            FixCords();
+            this.Damage = 30;
+            this.Speed = 10;
+            //FixCords();
         }
 
         public void FixCords()
         {
             if (Dir == Direction.DOWN)
-                Rectangle = new Rectangle(Rectangle.X + 15, Rectangle.Y + 35, 10, 30);
+                Rectangle = new Rectangle(Rectangle.X + 15, Rectangle.Y + 40, 10, 30);
             else if (Dir == Direction.UP)
-                Rectangle = new Rectangle(Rectangle.X + 15, Rectangle.Y - 35, 10, 30);
+                Rectangle = new Rectangle(Rectangle.X + 15, Rectangle.Y - 40, 10, 30);
             else if (Dir == Direction.LEFT)
-                Rectangle = new Rectangle(Rectangle.X - 35, Rectangle.Y + 15, 10, 30);
+                Rectangle = new Rectangle(Rectangle.X - 40, Rectangle.Y + 15, 10, 30);
             else
-                Rectangle = new Rectangle(Rectangle.X + 35, Rectangle.Y + 15, 10, 30);
+                Rectangle = new Rectangle(Rectangle.X + 40, Rectangle.Y + 15, 10, 30);
         }
 
         public void Move()
