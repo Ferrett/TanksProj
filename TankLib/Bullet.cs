@@ -22,11 +22,9 @@ namespace TankLib
             this.Dir = dir;
             this.Speed = speed;
             this.IsActive = act;
-            this.Damage = 30;
+            this.Damage = 300;
 
             FixCords();
-
-
         }
 
         public void FixCords()
