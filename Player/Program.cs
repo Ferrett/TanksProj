@@ -1,14 +1,22 @@
 ﻿using System;
 
+
 namespace TankGame
 {
     public static class Program
     {
+
         [STAThread]
-        static void Main()
+        public static void Main()
         {
-            using (var game = new Game())
-                game.Run();
+            Start.StartForm();
+
+            if (Start.Login)
+            {
+                
+                using (var game = new Game())
+                    game.Run();
+            }
         }
     }
 }

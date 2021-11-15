@@ -162,6 +162,7 @@ namespace TankGame
             tanks = new List<Tank>();
 
             
+            
             while (!client.socket.Connected)
             {
                 try
